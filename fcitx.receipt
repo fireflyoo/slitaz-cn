@@ -1,0 +1,33 @@
+# SliTaz package receipt.
+
+PACKAGE="fcitx"
+VERSION="4.2.6.1"
+CATEGORY="x-window"
+SHORT_DESC="Free Chinese Input Toy of X, a collection of Simplified Chinese input methods for Linux."
+MAINTAINER="lufeng369@gmail.com"
+DEPENDS="icu libxml2 xorg-libxkbfile"
+BUILD_DEPENDS="cmake intltool cairo-dev pango-dev gtk+-dev gcc dbus-glib-dev dbus-dev libxml2-dev iso-codes xorg-libxkbfile-dev icu-dev"
+TARBALL="$PACKAGE-${VERSION}_dict.tar.xz"
+WEB_SITE="http://code.google.com/p/fcitx/"
+WGET_URL="http://fcitx.googlecode.com/files/$TARBALL"
+
+# Rules to configure and make the package.
+compile_rules()
+{
+    mkdir -p $src/build
+    cd $src/build
+    cmake $src -DCMAKE_BUILD_TYPE=Release \
+               -DENABLE_ENCHANT=OFF \
+               -DENABLE_PRESAGE=OFF \
+               -DENABLE_GIR=OFF \
+               -DCMAKE_INSTALL_PREFIX=/usr \
+               -DENABLE_DBUS=ON \
+               -DENABLE_OPENCC=OFF
+    make && make install 
+}
+
+# Rules to gen a SliTaz package suitable for Tazpkg.
+genpkg_rules()
+{
+  cp -a $_pkg/usr $fs/
+}
