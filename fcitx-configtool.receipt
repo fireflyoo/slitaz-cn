@@ -1,0 +1,30 @@
+# SliTaz package receipt.
+
+PACKAGE="fcitx-configtool"
+VERSION="0.4.5.1"
+CATEGORY="system-tools"
+SHORT_DESC="config tool for fcitx4"
+MAINTAINER="lufeng369@gmail.com"
+DEPENDS="gtk+ glib libunique dbus-glib"
+BUILD_DEPENDS="cmake glib-dev gtk+-dev libunique-dev dbus-glib-dev"
+WEB_SITE="http://code.google.com/p/fcitx/"
+TARBALL="$PACKAGE-$VERSION.tar.xz"
+WGET_URL="http://fcitx.googlecode.com/files/$TARBALL"
+
+
+# Rules to configure and make the package.
+compile_rules()
+{
+  mkdir -p $src/build
+	cd $src/build
+	cmake $src -DCMAKE_INSTALL_PREFIX=/usr \
+	           -DENABLE_GTK2=ON \
+	           -DENABLE_GTK3=OFF
+	make && make install
+}
+
+# Rules to gen a SliTaz package suitable for Tazpkg.
+genpkg_rules()
+{
+	cp -a $install/* $fs
+}
