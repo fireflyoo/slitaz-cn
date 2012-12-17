@@ -1,0 +1,21 @@
+# SliTaz package receipt.
+
+PACKAGE="fcitx-zhengma"
+VERSION="0.3.3"
+CATEGORY="x-window"
+SHORT_DESC="The Chinese inputmethod of zhengma for FCITX"
+MAINTAINER="lufeng369@gmail.com"
+DEPENDS="fcitx-pinyin"
+WEB_SITE="http://code.google.com/p/fcitx/"
+WANTED="fcitx-table-extra"
+
+# Rules to gen a SliTaz package suitable for Tazpkg.
+genpkg_rules()
+{
+    mkdir -p $fs/usr/share/fcitx/table \
+             $fs/usr/share/icons/hicolor/48x48/apps \
+             $fs/usr/share/fcitx/imicon
+    cp -a $install/usr/share/fcitx/table/zhengma.* $fs/usr/share/fcitx/table/
+    cp -a $install/usr/share/icons/hicolor/48x48/apps/fcitx-zhengma.png $fs/usr/share/icons/hicolor/48x48/apps/
+    cp -a $install/usr/share/fcitx/imicon/zhengma.png $fs/usr/share/fcitx/imicon/
+}
