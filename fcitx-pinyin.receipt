@@ -1,0 +1,35 @@
+# SliTaz package receipt.
+
+PACKAGE="fcitx-pinyin"
+VERSION="4.2.6.1"
+CATEGORY="x-window"
+SHORT_DESC="Free Chinese Input Toy of X, a collection of Simplified Chinese input methods for Linux."
+MAINTAINER="lufeng369@gmail.com"
+DEPENDS="icu"
+WEB_SITE="http://code.google.com/p/fcitx/"
+WANTED="fcitx"
+# Rules to gen a SliTaz package suitable for Tazpkg.
+genpkg_rules()
+{
+    cp -a $install/usr $fs/
+#remove fcitx-dev
+  rm -rf $fs/usr/include
+	rm -rf $fs/usr/lib/pkgconfig
+	rm -rf $fs/usr/share/cmake
+#remove tables
+	rm $fs/usr/share/fcitx/table/*.*
+#remove man & doc
+	rm -rf $fs/usr/share/man
+	rm -rf $fs/usr/share/doc
+#remove skin-dark
+	rm -rf $fs/usr/share/fcitx/skin/dark
+#remove all icons
+	install -D $fs/usr/share/icons/hicolor/128x128/apps/fcitx.png $fs/usr/share/pixmaps/fcitx.png
+	rm -rf $fs/share/icons
+
+#Change Shortcut & Skin
+  sed -i 's/DefaultValue=default/DefaultValue=classic/' $fs/usr/share/fcitx/configdesc/fcitx-classic-ui.desc
+  sed -i \
+      -e 's/DefaultValue=-/DefaultValue=,/' \
+      -e 's/DefaultValue==/DefaultValue=./' $fs/usr/share/fcitx/configdesc/config.desc
+}
