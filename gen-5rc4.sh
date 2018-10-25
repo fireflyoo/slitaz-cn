@@ -17,7 +17,7 @@ if [ -e ../$ISO ]; then
 fi
 cat << EOF | chroot rootfs
 echo hwclock -t >> /etc/init.d/local.sh
-#echo ntpd -nq -p cn.ntp.org.cn
+#echo ntpd -nq -p cn.ntp.org.cn >> /etc/init.d/local.sh
 sed -i 's/ntpd//' /etc/rcS.conf
 echo http://malibu.tuxfamily.net/slitaz/packages/5.0/ > /var/lib/tazpkg/mirror
 rm /usr/share/locale/* -rf
