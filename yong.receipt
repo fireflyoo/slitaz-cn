@@ -18,7 +18,8 @@ BUILD_DEPENDS="node gtk+-dev pango-dev cairo-dev ibus-dev wayland-dev gtk+3-dev"
 compile_rules()
 {
 cd $src
-[ ! -e $(basename $BUILDJS) ] && wget $BUILDJS
+[ ! -e $stuff/build.js ] && wget $BUILDJS -P $stuff
+cp $stuff/build.js .
 mkdir -p llib/l32
 mkdir -p cloud/l32
 mkdir -p gbk/l32
@@ -38,6 +39,46 @@ sed -i "s/,'l32-gtk3'//" im/build.txt
 sed -i '/-gtk3/d' install/build.txt
 sed -i 's/copy_build("l64");//' install/build.txt
 sed -i 's/default=0/default=5/' im/yong.ini
+
+# modify shuangping rules
+sed -i -r  -e "s/'p'(,[1|2],\"\wh{0,1}un\")/'y'\1/g" \
+-e "s/'d'(,[1|2],\"\wh{0,1}uang\")/'l'\1/g" \
+-e "s/'d'(,[1|2],\"\wh{0,1}iang\")/'l'\1/g" \
+-e "s/'y'(,[1|2],\"\wh{0,1}uai\")/'k'\1/g"  \
+-e "s/'y'(,[1|2],\"\wh{0,1}ing\")/'k'\1/g" \
+-e "s/'w'(,[1|2],\"\wh{0,1}ua\")/'x'\1/g"  \
+-e "s/'w'(,[1|2],\"\wh{0,1}ia\")/'x'\1/g"  \
+-e "s/'b'(,[1|2],\"\wh{0,1}ou\")/'z'\1/g"  \
+-e "s/'z'(,[1|2],\"\wh{0,1}ei\")/'w'\1/g"  \
+-e "s/'k'(,[1|2],\"\wh{0,1}ao\")/'c'\1/g"  \
+-e "s/'l'(,[1|2],\"\wh{0,1}ai\")/'d'\1/g"  \
+-e "s/'n'(,[1|2],\"\wh{0,1}in\")/'b'\1/g"  \
+-e "s/'x'(,[1|2],\"\wh{0,1}ie\")/'p'\1/g"  \
+-e "s/'c'(,[1|2],\"\wh{0,1}iao\")/'n'\1/g"  common/pinyin.c
+cp -f common/pinyin.c cloud/pinyin.c
+sed -i -e 's/default=0/default=6/' \
+       -e "s|overlay=mb/pinyin.ini|overlay=mb/sp.ini\nsp=zrm|" \
+       -e "s/select=LSHIFT RSHIFT/select=; '/" \
+       -e "s/CNen=LCTRL/CNen=LSHIFT/"   \
+       -e "s/page=- =/page=, ./"   \
+       -e "s/#num=push/ABCD=1/"   \
+im/yong.ini
+sed -i 's/"自然码"/"小鹤双拼"/' config/config_ui.c
+# modify end
+
+# change default skin
+png="iVBORw0KGgoAAAANSUhEUgAAAB4AAAATCAIAAAAIzCorAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A
+/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9sFCwYzDrySergAAAAhSURBVDjL
+Y/z8+TMDbQATA83AqNGjRo8aPWr0qNEj3mgAvhgC/8aR0LcAAAAASUVORK5CYII="
+echo $png | base64 -d  > im/skin/name1.png
+for name in skin skin0 skin1 skin2; do
+sed -i -e 's/s2t=84,3/name=90,6/' \
+       -e 's/s2t_s=jian1.png/name_img=name1.png/' \
+       -e 's/s2t_t=fan1.png/name_font=Bold 18/' \
+       -e 's/keyboard=108,3/name_color=#3975ce/' \
+-e '/keyboard_img/d' im/skin/${name}.ini
+done
+# modify end
 node build.js l32
 node build.js -C im/gtk-im
 node build.js -C install copy
@@ -46,12 +87,14 @@ node build.js -C install copy
 # Rules to gen a SliTaz package suitable for Tazpkg.
 genpkg_rules()
 {
+echo install_pash=$install
 # cp -a $install/* $fs
 mkdir -p $fs/usr/bin
-cp -a $src/install/yong $fs/usr
-cd $fs/usr/yong
-ln -sf ../yong/l32/yong-gtk2 $fs/usr/bin/yong
-ln -sf ../yong/l32/yong-config-gtk2 $fs/usr/bin/yong-config
+mkdir -p $fs/usr/share
+cp -a $src/install/yong $fs/usr/share
+cd $fs/usr/share/yong
+ln -sf ../share/yong/l32/yong-gtk2 $fs/usr/bin/yong
+ln -sf ../share/yong/l32/yong-config-gtk2 $fs/usr/bin/yong-config
 install -D locale/zh_CN.mo $fs/usr/share/locale/zh_CN/LC_MESSAGES/yong.mo
 install -D l32/gtk-im/im-yong-gtk2.so $fs/usr/lib/gtk-2.0/2.10.0/immodules/im-yong.so
 install -D $src/im/gtk-im/l32-gtk3/im-yong.so $fs/usr/lib/gtk-3.0/3.0.0/immodules/im-yong.so
