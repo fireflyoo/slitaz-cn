@@ -1,0 +1,68 @@
+# SliTaz package receipt.
+
+PACKAGE="yong"
+VERSION="2.5.0"
+CATEGORY="x-window"
+SHORT_DESC="Chinese input method"
+MAINTAINER="fireflyoo"
+LICENSE="GPL3"
+WEB_SITE="https://github.com/dgod/yong"
+TARBALL="$PACKAGE-$VERSION.tar.bz2"
+WGET_URL="git|git://github.com/dgod/yong.git git|git://github.com/dgod/build.js.git"
+BUILDJS="https://github.com/dgod/build.js/raw/master/build.js"
+
+DEPENDS="gtk+"
+BUILD_DEPENDS="node gtk+-dev pango-dev cairo-dev ibus-dev wayland-dev gtk+3-dev"
+
+# Rules to configure and make the package.
+compile_rules()
+{
+cd $src
+[ ! -e $(basename $BUILDJS) ] && wget $BUILDJS
+mkdir -p llib/l32
+mkdir -p cloud/l32
+mkdir -p gbk/l32
+mkdir -p mb/l32
+mkdir -p vim/l32
+mkdir -p im/IMdkit/l32
+
+mkdir -p im/l32-gtk2
+mkdir -p im/l32-gtk3
+mkdir -p config/l32-gtk2
+mkdir -p config/l32-gtk3
+mkdir -p im/gtk-im/l32-gtk2
+mkdir -p im/gtk-im/l32-gtk3
+sed -i 's/,"l32-gtk3"//' config/build.txt
+sed -i "s/,'l32-gtk3'//" im/build.txt
+#sed -i "s/,'l32-gtk3'//" im/gtk-im/build.txt
+sed -i '/-gtk3/d' install/build.txt
+sed -i 's/copy_build("l64");//' install/build.txt
+sed -i 's/default=0/default=5/' im/yong.ini
+node build.js l32
+node build.js -C im/gtk-im
+node build.js -C install copy
+}
+
+# Rules to gen a SliTaz package suitable for Tazpkg.
+genpkg_rules()
+{
+# cp -a $install/* $fs
+mkdir -p $fs/usr/bin
+cp -a $src/install/yong $fs/usr
+cd $fs/usr/yong
+ln -sf ../yong/l32/yong-gtk2 $fs/usr/bin/yong
+ln -sf ../yong/l32/yong-config-gtk2 $fs/usr/bin/yong-config
+install -D locale/zh_CN.mo $fs/usr/share/locale/zh_CN/LC_MESSAGES/yong.mo
+install -D l32/gtk-im/im-yong-gtk2.so $fs/usr/lib/gtk-2.0/2.10.0/immodules/im-yong.so
+install -D $src/im/gtk-im/l32-gtk3/im-yong.so $fs/usr/lib/gtk-3.0/3.0.0/immodules/im-yong.so
+}
+post_install()
+{
+gtk-query-immodules-2.0 --update-cache
+gtk-query-immodules-3.0 --update-cache
+}
+post_remove()
+{
+gtk-query-immodules-2.0 --update-cache
+gtk-query-immodules-3.0 --update-cache
+}
