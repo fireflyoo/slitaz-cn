@@ -12,7 +12,7 @@ WGET_URL="git|git://github.com/dgod/yong.git git|git://github.com/dgod/build.js.
 BUILDJS="https://github.com/dgod/build.js/raw/master/build.js"
 
 DEPENDS="gtk+"
-BUILD_DEPENDS="node gtk+-dev pango-dev cairo-dev ibus-dev wayland-dev gtk+3-dev"
+BUILD_DEPENDS="node gtk+-dev gtk+3-dev ibus-dev"
 
 # Rules to configure and make the package.
 compile_rules()
@@ -38,7 +38,6 @@ sed -i "s/,'l32-gtk3'//" im/build.txt
 #sed -i "s/,'l32-gtk3'//" im/gtk-im/build.txt
 sed -i '/-gtk3/d' install/build.txt
 sed -i 's/copy_build("l64");//' install/build.txt
-sed -i 's/default=0/default=5/' im/yong.ini
 
 # modify shuangping rules
 sed -i -r  -e "s/'p'(,[1|2],\"\wh{0,1}un\")/'y'\1/g" \
@@ -56,14 +55,26 @@ sed -i -r  -e "s/'p'(,[1|2],\"\wh{0,1}un\")/'y'\1/g" \
 -e "s/'x'(,[1|2],\"\wh{0,1}ie\")/'p'\1/g"  \
 -e "s/'c'(,[1|2],\"\wh{0,1}iao\")/'n'\1/g"  common/pinyin.c
 cp -f common/pinyin.c cloud/pinyin.c
-sed -i -e 's/default=0/default=6/' \
-       -e "s|overlay=mb/pinyin.ini|overlay=mb/sp.ini\nsp=zrm|" \
+sed -i 's/"自然码"/"小鹤双拼"/' config/config_ui.c
+sed -i -e 's/default=0/default=4/' \
        -e "s/select=LSHIFT RSHIFT/select=; '/" \
        -e "s/CNen=LCTRL/CNen=LSHIFT/"   \
        -e "s/page=- =/page=, ./"   \
-       -e "s/#num=push/ABCD=1/"   \
+       -e "/keypad=0/a\ABCD=1"   \
 im/yong.ini
-sed -i 's/"自然码"/"小鹤双拼"/' config/config_ui.c
+
+cat >>im/yong.ini<<EOF
+[double]
+name=双拼
+engine=libmb.so
+arg=mb/pinyin.txt
+overlay=mb/sp.ini
+sp=zrm
+EOF
+sed -i -e 's/4=gbk/4=pinyin/' \
+       -e 's/5=pinyin/5=double/' \
+im/yong.ini
+
 # modify end
 
 # change default skin
