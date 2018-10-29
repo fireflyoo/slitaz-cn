@@ -63,16 +63,9 @@ sed -i -e 's/default=0/default=4/' \
        -e "/keypad=0/a\ABCD=1"   \
 im/yong.ini
 
-cat >>im/yong.ini<<EOF
-[double]
-name=双拼
-engine=libmb.so
-arg=mb/pinyin.txt
-overlay=mb/sp.ini
-sp=zrm
-EOF
+cat data/entry/cloud.ini >> im/yong.ini
 sed -i -e 's/4=gbk/4=pinyin/' \
-       -e 's/5=pinyin/5=double/' \
+       -e 's/5=pinyin/5=cloud/' \
 im/yong.ini
 
 # modify end
@@ -83,11 +76,11 @@ png="iVBORw0KGgoAAAANSUhEUgAAAB4AAAATCAIAAAAIzCorAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8
 Y/z8+TMDbQATA83AqNGjRo8aPWr0qNEj3mgAvhgC/8aR0LcAAAAASUVORK5CYII="
 echo $png | base64 -d  > im/skin/name1.png
 for name in skin skin0 skin1 skin2; do
-sed -i -e 's/s2t=84,3/name=90,6/' \
-       -e 's/s2t_s=jian1.png/name_img=name1.png/' \
-       -e 's/s2t_t=fan1.png/name_font=Bold 18/' \
-       -e 's/keyboard=108,3/name_color=#3975ce/' \
--e '/keyboard_img/d' im/skin/${name}.ini
+  sed -i -e 's/s2t=84,3/name=90,6/' \
+         -e 's/s2t_s=jian1.png/name_img=name1.png/' \
+         -e 's/s2t_t=fan1.png/name_font=Bold 18/' \
+         -e 's/keyboard=108,3/name_color=#3975ce/' \
+         -e '/keyboard_img/d' im/skin/${name}.ini
 done
 # modify end
 node build.js l32
@@ -98,16 +91,27 @@ node build.js -C install copy
 # Rules to gen a SliTaz package suitable for Tazpkg.
 genpkg_rules()
 {
-echo install_pash=$install
+
 # cp -a $install/* $fs
 mkdir -p $fs/usr/bin
-mkdir -p $fs/usr/share
-cp -a $src/install/yong $fs/usr/share
+mkdir -p $fs/usr/share/yong
+
 cd $fs/usr/share/yong
+
+for item in mb skin l32; do
+  cp -a $src/install/yong/$item .
+done
+
+rm mb/english.txt -f
+rm l32/im-gtk -rf
+
+for item in bihua.bin normal.txt README.txt yong.ini keyboard.ini; do
+  cp -a $src/install/yong/$item .
+done
 ln -sf ../share/yong/l32/yong-gtk2 $fs/usr/bin/yong
 ln -sf ../share/yong/l32/yong-config-gtk2 $fs/usr/bin/yong-config
-install -D locale/zh_CN.mo $fs/usr/share/locale/zh_CN/LC_MESSAGES/yong.mo
-install -D l32/gtk-im/im-yong-gtk2.so $fs/usr/lib/gtk-2.0/2.10.0/immodules/im-yong.so
+install -D $src/install/yong/locale/zh_CN.mo $fs/usr/share/locale/zh_CN/LC_MESSAGES/yong.mo
+install -D $src/install/yong/l32/gtk-im/im-yong-gtk2.so $fs/usr/lib/gtk-2.0/2.10.0/immodules/im-yong.so
 install -D $src/im/gtk-im/l32-gtk3/im-yong.so $fs/usr/lib/gtk-3.0/3.0.0/immodules/im-yong.so
 }
 post_install()
